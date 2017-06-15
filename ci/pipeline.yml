@@ -1,0 +1,27 @@
+resources:
+- name: omnibus-td-agent
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/mmandolesi-g/omnibus-td-agent.git
+
+jobs:
+- name: build-td-agent-package
+  serial: true
+  plan:
+  - get: omnibus-td-agent
+    trigger: true
+  - task: build-rpm
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: paas-docker-artifactory.gannettdigital.com/paas-centos7-base
+          tag: "latest"
+          insecure_registries: [ "paas-docker-artifactory.gannettdigital.com" ]
+      inputs:
+        - name: omnibus-td-agent
+      run:
+        path: sh
+        args: ['-c', 'cd omnibus-td-agent && ci/build.sh']
